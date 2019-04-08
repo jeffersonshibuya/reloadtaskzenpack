@@ -1,4 +1,3 @@
-
 import Globals
 from Products.ZenUtils.ZenScriptBase import ZenScriptBase
 dmd = ZenScriptBase(connect=True, noopts=True).dmd
@@ -21,7 +20,7 @@ class ReloadTask(PythonPlugin):
     modname = 'ZenPacks.IPC.Qlik.Qlik_Sense_ReloadTask'
 
     requiredProperties = (
-        'zIPCDeviceName',
+        'zPropertie',
         )
 
     deviceProperties = PythonPlugin.deviceProperties + requiredProperties
@@ -33,22 +32,13 @@ class ReloadTask(PythonPlugin):
 
             self.headers = {
                 'Accept': 'application/json',
-                'Cache-Control': 'no-cache',
-                'X-Qlik-Xrfkey': '123456789ABCDEFG',
-                'vnoc': 'vnoc',
             }
 
-            self.params = (
-                ('xrfkey', '123456789ABCDEFG'),
-            )
-
-            deviceName = getattr(device, 'zIPCDeviceName', None)
-            if not deviceName:
-                deviceName = device.id
-
-            self.response = json.loads(requests.get('https://'+deviceName+'/vnoc/qrs/reloadtask/full', headers=self.headers, params=self.params).text)
-
-            #log.info('response: %s' % response)
+            self.params = ()
+            
+            url = "https://API-URL.com"
+            self.response = json.loads(requests.get(url, headers=self.headers, params=self.params)
+                                       
             rm = yield self.relMap()
 
             returnValue(rm)
@@ -61,18 +51,7 @@ class ReloadTask(PythonPlugin):
         try:
             for x in self.response:
                 if x['name'].startswith('Manually triggered'):
-                    #if x['isManuallyTriggered']:
-
-                    if x['operational']['lastExecutionResult']['startTime'][:10] == '1753-01-01':
-                        startTime = ''
-                    else:
-                        startTime = x['operational']['lastExecutionResult']['startTime'][:16].replace('-', '/').replace('T', ' ')
-
-                    if x['operational']['lastExecutionResult']['stopTime'][:10] == '1753-01-01':
-                        stoptTime = ''
-                    else:
-                        stopTime = x['operational']['lastExecutionResult']['stopTime'][:16].replace('-', '/').replace('T', ' ')
-
+                   
                     results.append(self.objectMap({
                         'id': self.prepId(x['id']),
                         'title': x['name'],
